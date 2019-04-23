@@ -1,7 +1,6 @@
 # Redux
 ## Core
 
----
 #### Mission
 
 You have to develop a Redux app with React Native binding that will work in both iOS and Android platforms. For convenience we are only going to test the app in iOS iphone simulator. We expect you to fully understand the concept of redux and implement it in the project. Wen also require you to do the project with following parameters
