@@ -66,3 +66,7 @@ You have to convert the previous ReactNative project ReactNativeBasic App which 
 #### WayPoint 2: Convert IntekWeather app to Redux
 
 You have to convert the previous ReactNative project IntekWeather App project which you had done before into a Redux app. You have to convert the components into Redux only if you find them to be efficient when compared with pure ReachNative.
+
+
+---
+## Installation instruction
