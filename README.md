@@ -70,3 +70,37 @@ You have to convert the previous ReactNative project IntekWeather App project wh
 
 ---
 ## Installation instruction
+
+---
+
+## Để có thể hiểu về Redux, cần phải nắm rõ các khái niệm cơ bản sau:
+#### 1. Store
+#### 2. Actions
+#### 3. Reducers
+#### 4. Store
+---
+### 1. Store:
+
+
+---
+### 2. Actions:
+Actions là một khối thông tin (thể hiện dưới dạng JavaScript object - giống như dictionary trong Python) mô tả một hành động gửi dữ liệu (data) từ application tới store. 
+
+Điểm đặc biệt của actions là chỉ có duy nhất nó mới có thể được gửi đến store.
+
+Theo document thì ta có thể gửi actions thông qua hàm: store.dispatch()
+
+Action thường là plain JavaScript object và bắt buộc phải có thuộc tính **type**
+Giá trị của **type** thường là một chuỗi (strings) mô tả hành động được thực hiện
+
+Giá trị còn lại trong action thường là dữ liệu mà ta muốn gửi đến store (cập nhật hoặc thay đổi). Dưới đây là một ví dụ về một action:
+```
+const ADD_TODO = 'ADD_TODO'
+{
+    type: ADD_TODO,
+    text: 'Build my first Redux app'
+}
+```
+Ở ví dụ trên, ta vừa tạo ra một Action là một plain JavaScript object với thuộc tính **type** = 'ADD_TODO' và thuộc tính **text** = 'Build my first Redux app'.
+Thuộc tính *text* ở đây chính là dữ liệu mà ta muốn gửi đến store để cập nhật hoặc thay đổi.
+Ví dụ như trong store cũng có thuộc tính **text** = undefined (rỗng), khi ta dispatch action trên, lúc này thuộc tính **text** trong store sẽ thay đổi, store.**text** = 'Build my first Redux app'.
