@@ -284,6 +284,18 @@ function todoApp (state = initialState, action) {
 Ta thử làm ngắn gọn hơn cho reducers.js
 > reducers.js
 ```
+import {
+  ADD_TODO,
+  TOGGLE_TODO,
+  SET_VISIBILITY_FILTER,
+  VisibilityFilters,
+} from './actions.js'
+
+const initialState = {
+  visibilityFilter: VisibilityFilters.SHOW_ALL,
+  todos: []
+}
+
 function todos(state = [], action) {
   switch (action.type) {
     case ADD_TODO:
@@ -326,4 +338,207 @@ function todoApp (state = initialState, action) {
       return state
   }
 }
+```
+Hãy cùng phân tích một tí về Reducer trên:
+
+Đầu tiên, từ một hàm todoApp() lớn, ta đã chia nó ra thành 2 hàm nhỏ là todos() và todoApp().
+
+Vậy tại sao lại nên chia nó ra làm 2 phần như vậy? Câu trả lời đó là, nếu bạn để ý, hai Action: ADD_TODO, TOGGLE_TODO và Action: SET_VISIBILITY_FILTER là 2 loại hành động độc lập với nhau.
+
+Độc lập ở chỗ nào? Độc lập ở chỗ Action SET_VISIBILITY_FILTER chỉ cập nhật/chỉnh sửa **state** có thuộc tính là **visibilityFilter**, còn ADD_TODO và TOGGLE_TODO lại liên quan đến thuộc tính **todos** (có giá trị là một array)
+
+Như vậy, ta có thể dễ dàng phân ra việc update thuộc tính **todos** bằng một hàm riêng:
+
+```
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map( (todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+```
+Chú ý rằng, todos() cũng là một reducer function (nhận 2 argument vào là **state** và **action**), và trong Redux, một hàm giống todos() được gọi là **reducer composition**. 
+
+Ngoài ra nên chú ý, hàm todos() nhận **state** ở đây là một array.
+
+Như vậy, tổng quan có thể thấy rằng, hàm lớn todoApp() cắt nhỏ một phần **state** để cho todos() xử lý.
+
+Đây là một khái niệm khá quan trọng trong Redux khi build một Redux App.
+
+> Ta đã chia nhỏ được một reducer composition của **state**.todos, vậy đối với **state**.visibilityFilter thì sao?
+
+Nào mình cùng thử?
+```
+const { SHOW_ALL } = VisibilityFilters
+
+function visibilityFilter (state = SHOW_ALL, action) {
+  switch (action.type) {
+    case (SET_VISIBILITY_FILTER):
+      return action.filter
+    default:
+      return state
+  }
+}
+```
+> reduces.js
+```
+import {
+  ADD_TODO,
+  TOGGLE_TODO,
+  SET_VISIBILITY_FILTER,
+  VisibilityFilters,
+} from './actions.js'
+
+const { SHOW_ALL } = VisibilityFilters
+
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map( (todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+
+function visibilityFilter (state = SHOW_ALL, action) {
+  switch (action.type) {
+    case (SET_VISIBILITY_FILTER):
+      return action.filter
+    default:
+      return state
+  }
+}
+
+
+function todoApp(state = {}, action) {
+  return {
+    visibilityFilter: visibilityFilter(state.visibilityFilter, action),
+    todos: todos(state.todos, action)
+  }
+}
+```
+
+Ngoài ra còn có thể dùng utility **combineReducers** của 'redux' để tạo một boilerplate logic tương đương todoApp() function trên:
+
+```
+import { combineReducers } from 'redux'
+
+const todoApp = combineReducers({
+  visibilityFilter,
+  todos
+})
+
+export default todoApp
+```
+Cách viết như trên tương đương với:
+```
+export default function todoApp(state = {}, action) {
+  return {
+    visibilityFilter: visibilityFilter(state.visibilityFilter, action),
+    todos: todos(state.todos, action)
+  }
+}
+```
+Ta cũng có thể đưa vào các key khác nhau, hoặc là có thể gọi các function khác bằng cách:
+```
+const reducer = combineReducers({
+  a: doSomethingWithA,
+  b: processB,
+  c: c
+})
+```
+```
+function reducer(state = {}, action) {
+  return {
+    a: doSomethingWithA(state.a, action),
+    b: processB(state.b, action),
+    c: c(state.c, action)
+  }
+}
+```
+2 cách làm trên đều tương tự nhau.
+#### Code hoàn chỉnh:
+>reducers.js
+```
+import { combineReducers } from 'redux'
+import {
+  ADD_TODO,
+  TOGGLE_TODO,
+  SET_VISIBILITY_FILTER,
+  VisibilityFilters
+} from './actions'
+const { SHOW_ALL } = VisibilityFilters
+
+function visibilityFilter(state = SHOW_ALL, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return action.filter
+    default:
+      return state
+  }
+}
+
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map((todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+const todoApp = combineReducers({
+  visibilityFilter,
+  todos
+})
+
+export default todoApp
 ```
