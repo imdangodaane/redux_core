@@ -175,3 +175,155 @@ Reducer là một pure function nhận arguments là previous **state** và mộ
 ```
 (previousState, action) => return newState
 ```
+
+---
+### 3.3 Practical Examples:
+Ở thời điểm hiện tại thì thực sự khá mà có thể giải thích một cách rõ ràng các định nghĩa bằng từ ngữ thông thường, do đó làm một ví dụ thực tế là cách tốt nhất để hiểu rõ các khái niệm trên.
+
+Tôi sẽ mô phỏng làm theo ví dụ cách thức tạo Todo App dựa vào document.
+
+---
+#### Tạo file actions.js chứa các định nghĩa liên quan Actions:
+> actions.js
+```
+export const ADD_TODO = 'ADD_TODO'
+export const TOGGLE_TODO = 'TOGGLE_TODO'
+export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+
+export const VisibilityFilters = {
+  SHOW_ALL: 'SHOW_ALL',
+  SHOW_COMPLETED: 'SHOW_COMPLETED',
+  SHOW_ACTIVE: 'SHOW_ACTIVE'
+}
+
+export function addTodo(text) {
+  return { type: ADD_TODO, text }
+}
+
+export function toggleTodo(index) {
+  return { type: TOGGLE_TODO, index }
+}
+
+export function setVisibilityFilter(filter) {
+  return { type: SET_VISIBILITY_FILTER, filter }
+}
+```
+#### Sau khi có Actions, ta tạo Reducer:
+#### Tạo file reducers.js:
+> reducers.js
+```
+import {
+  VisibilityFilters,
+  SET_VISIBILITY_FILTER
+} from './actions.js';
+
+const initialState = {
+  visibilityFilter: VisibilityFilters.SHOW_ALL,
+  todos: []
+}
+
+function todoApp(state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    default:
+      return state
+  }
+}
+```
+
+Ở đây, để có thể handle nhiều hơn một Action, ta thêm vào reducers.js như sau:
+> reducers.js
+```
+import {
+  ADD_TODO,
+  TOGGLE_TODO,
+  SET_VISIBILITY_FILTER,
+  VisibilityFilters,
+} from './actions.js'
+
+const initialState = {
+  visibilityFilter: VisibilityFilters.SHOW_ALL,
+  todos: []
+}
+
+function todoApp (state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: [
+          ...states.todos,
+          {
+            text: action.text,
+            completed: false
+          }
+        ]
+      })
+    case TOGGLE_TODO:
+      return Object.assign({}, state, {
+        todos: state.todos.map((todo, index) => {
+          if (index === action.index) {
+            return Object.assign({}, todo, {
+              completed: !todo.completed
+            })
+          }
+          return todo
+        })
+      })
+    default:
+      return state
+  }
+}
+```
+Ta thử làm ngắn gọn hơn cho reducers.js
+> reducers.js
+```
+function todos(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [
+        ...state,
+        {
+          text: action.text,
+          completed: false
+        }
+      ]
+    case TOGGLE_TODO:
+      return state.map( (todo, index) => {
+        if (index === action.index) {
+          return Object.assign({}, todo, {
+            completed: !todo.completed
+          })
+        }
+        return todo
+      })
+    default:
+      return state
+  }
+}
+
+function todoApp (state = initialState, action) {
+  switch (action.type) {
+    case SET_VISIBILITY_FILTER:
+      return Object.assign({}, state, {
+        visibilityFilter: action.filter
+      })
+    case ADD_TODO:
+      return Object.assign({}, state, {
+        todos: todos(state.todos, action)
+      })
+    case TOGGLE_TODO:
+      return Object.assign({}, state, {
+        todos: todos(state.todos, action)
+      })
+    default:
+      return state
+  }
+}
+```
